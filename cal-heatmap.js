@@ -1,4 +1,4 @@
-/*! cal-heatmap v3.6.2 (Sun Mar 13 2022 15:19:26)
+/*! cal-heatmap v3.6.2 (Thu May 05 2022 00:32:21)
  *  ---------------------------------------------
  *  Cal-Heatmap is a javascript module to create calendar heatmap to visualize time series data
  *  https://github.com/wa0x6e/cal-heatmap
@@ -562,7 +562,7 @@ var CalHeatMap = function() {
 
 	// Record all the valid domains
 	// Each domain value is a timestamp in milliseconds
-	this._domains = d3.map();
+	this._domains = new Map();
 
 	this.graphDim = {
 		width: 0,
@@ -1783,7 +1783,7 @@ CalHeatMap.prototype = {
 				this.getSubDomain(newDomains[i]).map(buildSubDomain)
 			);
 
-			this._domains.remove(backward ? domains.pop() : domains.shift());
+			this._domains.delete(backward ? domains.pop() : domains.shift());
 		}
 
 		domains = this.getDomainKeys();
@@ -3095,7 +3095,7 @@ CalHeatMap.prototype = {
 var DomainPosition = function() {
 	"use strict";
 
-	this.positions = d3.map();
+	this.positions = new Map();
 };
 
 DomainPosition.prototype.getPosition = function(d) {
@@ -3129,12 +3129,12 @@ DomainPosition.prototype.shiftRightBy = function(exitingDomainDim) {
 
 	var mypos = this.positions;
 	var mythis = this;
-	mypos.each(function(value, key) {
+	mypos.forEach(function(value, key) {
 		mythis.positions.set(key, value - exitingDomainDim);
 	});
 
 	var domains = this.getKeys();
-	this.positions.remove(domains[0]);
+	this.positions.delete(domains[0]);
 };
 
 DomainPosition.prototype.shiftLeftBy = function(enteringDomainDim) {
@@ -3142,12 +3142,12 @@ DomainPosition.prototype.shiftLeftBy = function(enteringDomainDim) {
 
 	var mypos = this.positions;
 	var mythis = this;
-	mypos.each(function(value, key) {
+	mypos.forEach(function(value, key) {
 		mythis.positions.set(key, value + enteringDomainDim);
 	});
 
 	var domains = this.getKeys();
-	this.positions.remove(domains[domains.length-1]);
+	this.positions.delete(domains[domains.length-1]);
 };
 
 DomainPosition.prototype.getKeys = function() {
@@ -3236,7 +3236,7 @@ Legend.prototype.redraw = function(width) {
 		;
 	}
 
-	legendItem
+	var legendEnter = legendItem
 		.enter()
 		.append("rect")
 		.call(legendCellLayout)
@@ -3246,15 +3246,18 @@ Legend.prototype.redraw = function(width) {
 			if (calendar.legendScale !== null && options.legendColors !== null && options.legendColors.hasOwnProperty("base")) {
 				selection.attr("fill", options.legendColors.base);
 			}
-		})
-		.append("title")
-	;
+		});
+	
+	
+	legendEnter.append("title");
+
+	var legendUpdate = legendItem.merge(legendEnter);
 
 	legendItem.exit().transition().duration(options.animationDuration)
 	.attr("fill-opacity", 0)
 	.remove();
 
-	legendItem.transition().delay(function(d, i) { return options.animationDuration * i/10; })
+	legendUpdate.transition().delay(function(d, i) { return options.animationDuration * i/10; })
 		.call(legendCellLayout)
 		.attr("fill-opacity", 1)
 		.call(function(element) {

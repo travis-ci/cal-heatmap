@@ -3228,7 +3228,7 @@ Legend.prototype.redraw = function(width) {
 		;
 	}
 
-	legendItem
+	var legendEnter = legendItem
 		.enter()
 		.append("rect")
 		.call(legendCellLayout)
@@ -3238,15 +3238,18 @@ Legend.prototype.redraw = function(width) {
 			if (calendar.legendScale !== null && options.legendColors !== null && options.legendColors.hasOwnProperty("base")) {
 				selection.attr("fill", options.legendColors.base);
 			}
-		})
-		.append("title")
-	;
+		});
+	
+	
+	legendEnter.append("title");
+
+	var legendUpdate = legendItem.merge(legendEnter);
 
 	legendItem.exit().transition().duration(options.animationDuration)
 	.attr("fill-opacity", 0)
 	.remove();
 
-	legendItem.transition().delay(function(d, i) { return options.animationDuration * i/10; })
+	legendUpdate.transition().delay(function(d, i) { return options.animationDuration * i/10; })
 		.call(legendCellLayout)
 		.attr("fill-opacity", 1)
 		.call(function(element) {
